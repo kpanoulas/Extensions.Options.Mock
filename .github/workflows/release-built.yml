@@ -1,0 +1,47 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Release
+
+on:
+  create:
+  push:
+    branches: [ "release/**" ]
+  pull_request:
+    branches: [ "release/**" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET   
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Get Build Version
+      run: |
+        . ./build/GetBuildVersion.ps1
+        $version = GetBuildVersion $Env:GITHUB_REF
+        Write-Host $version
+        echo "VERSION=$version" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+      shell: pwsh
+        
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore /p:Version=$VERSION
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
+    - name: Package nuget
+      run: dotnet pack /p:Version=$VERSION
+
+    - name: Nuget push
+      run: dotnet nuget push **\*.nupkg -s 'https://api.nuget.org/v3/index.json' -k ${{secrets.NUGET_ORG_JSONPATCH_JSON_NET_API_KEY}}
+

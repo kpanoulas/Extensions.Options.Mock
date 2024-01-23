@@ -43,5 +43,5 @@ jobs:
       run: dotnet pack /p:Version=$VERSION
 
     - name: Nuget push
-      run: dotnet nuget push **\*.nupkg -s 'https://api.nuget.org/v3/index.json' -k ${{secrets.NUGET_ORG_JSONPATCH_JSON_NET_API_KEY}}
+      run: dotnet nuget push **\*.nupkg -s 'https://api.nuget.org/v3/index.json' -k ${{secrets.NUGET_ORG_METRICS_OPTIONS_MOCK_API_KEY}}
 
